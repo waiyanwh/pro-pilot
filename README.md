@@ -73,4 +73,4 @@ privately using the guidance in [SECURITY.md](SECURITY.md).
 
 ## License
 
-Licensed under [Apache-2.0](LICENSE).
+Licensed under [MIT](LICENSE).

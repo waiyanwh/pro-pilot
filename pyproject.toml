@@ -4,8 +4,8 @@ version = "0.1.0"
 description = "Read-only Slack assistant for Kubernetes cluster questions"
 readme = "README.md"
 requires-python = ">=3.13"
-license = "Apache-2.0"
-license-files = ["LICENSE", "NOTICE"]
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
   "cachetools>=5",
   "jinja2>=3",

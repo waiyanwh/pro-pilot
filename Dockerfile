@@ -18,7 +18,7 @@ WORKDIR /app
 
 # Keep the builder context limited to package metadata and runtime code. The
 # final images copy only the virtual environment from these intermediate stages.
-COPY pyproject.toml uv.lock README.md LICENSE NOTICE ./
+COPY pyproject.toml uv.lock README.md LICENSE ./
 COPY pro_pilot ./pro_pilot
 
 FROM source AS build-hub
