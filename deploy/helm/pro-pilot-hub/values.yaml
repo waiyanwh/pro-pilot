@@ -1,0 +1,137 @@
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+image:
+  repository: pro-pilot-hub
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountServiceAccountToken: false
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  annotations: {}
+  websocket:
+    port: 8765
+    targetPort: 8765
+  health:
+    port: 8080
+    targetPort: 8080
+
+ingress:
+  enabled: false
+  className: alb
+  scheme: internal
+  certificateArn: ""
+  annotations:
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/backend-protocol-version: HTTP1
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/healthcheck-port: "8080"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=120
+    alb.ingress.kubernetes.io/target-type: ip
+  hosts:
+    - host: pro-pilot.example.com
+      paths:
+        - path: /spoke/v1/connect
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+# Native runtime YAML. Credentials are supplied through the Secret refs below.
+config:
+  slack:
+    channels: {}
+    allow_dm: false
+    max_question_chars: 1000
+  llm:
+    # Provider selection is intentionally required at deployment time.
+    mode: ""
+    base_url: ""
+    model_id: ""
+    region: ""
+    max_output_tokens: 2000
+    temperature: 0
+  agent:
+    max_iterations: 8
+    max_tool_calls: 16
+    max_parallel_tool_calls: 4
+    turn_deadline_s: 90
+    tool_result_chars_to_llm: 12000
+    thread_ttl_s: 86400
+    thread_max_turns: 20
+  rate_limits:
+    per_user:
+      requests: 10
+      per_s: 600
+    global:
+      requests: 60
+      per_s: 600
+    per_user_concurrent: 1
+  spoke_server:
+    listen: 0.0.0.0:8765
+    heartbeat_s: 20
+  health:
+    listen: 0.0.0.0:8080
+
+# Keep create=false to reference existing Secrets. For chart-owned Secrets,
+# enable create and supply values through a private, uncommitted values file.
+secrets:
+  create: false
+  slackBotToken:
+    name: pro-pilot-hub-secrets
+    key: slack-bot-token
+    value: ""
+  slackAppToken:
+    name: pro-pilot-hub-secrets
+    key: slack-app-token
+    value: ""
+  spokeTokensJson:
+    name: pro-pilot-hub-secrets
+    key: spoke-tokens-json
+    value: ""
+  llmApiKey:
+    name: pro-pilot-hub-secrets
+    key: llm-api-key
+    value: ""

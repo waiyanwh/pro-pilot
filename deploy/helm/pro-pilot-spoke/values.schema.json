@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "required": ["replicaCount", "strategy", "image", "clusterId", "hub", "namespaces", "kubernetes", "aws", "limits", "health", "rbac"],
+  "properties": {
+    "replicaCount": {"type": "integer", "minimum": 1, "maximum": 1},
+    "strategy": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {"type": {"const": "Recreate"}}
+    },
+    "image": {
+      "type": "object",
+      "required": ["repository", "pullPolicy"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "pullPolicy": {"type": "string", "enum": ["Always", "IfNotPresent", "Never"]},
+        "tag": {"type": "string"}
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {"automountServiceAccountToken": {"const": true}}
+    },
+    "clusterId": {"type": "string", "minLength": 3, "pattern": "^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$"},
+    "mode": {"const": "in-cluster"},
+    "hub": {
+      "type": "object",
+      "required": ["url", "tokenSecretRef"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "anyOf": [
+            {"pattern": "^wss://[^/?#@]+/spoke/v1/connect$"},
+            {"pattern": "^ws://[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.svc(?:\\.cluster\\.local)?:[0-9]{1,5}/spoke/v1/connect$"}
+          ]
+        },
+        "tokenSecretRef": {
+          "type": "object",
+          "required": ["create", "name", "key"],
+          "properties": {
+            "create": {"type": "boolean"},
+            "name": {"type": "string", "minLength": 1},
+            "key": {"type": "string", "minLength": 1},
+            "value": {"type": "string"}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"create": {"const": true}}},
+              "then": {"required": ["value"], "properties": {"value": {"minLength": 1}}}
+            }
+          ]
+        }
+      }
+    },
+    "namespaces": {
+      "type": "object",
+      "required": ["allow", "deny"],
+      "properties": {
+        "allow": {"type": "array", "items": {"type": "string"}},
+        "deny": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "kubernetes": {
+      "type": "object",
+      "required": ["argocdNamespace"],
+      "properties": {"argocdNamespace": {"type": "string", "minLength": 1}}
+    },
+    "aws": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "region": {"type": "string"},
+        "eksClusterName": {"type": "string"},
+        "expectedRoleArnPattern": {"type": "string"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"enabled": {"const": true}}},
+          "then": {
+            "required": ["region", "eksClusterName", "expectedRoleArnPattern"],
+            "properties": {
+              "region": {"minLength": 1},
+              "eksClusterName": {"minLength": 1},
+              "expectedRoleArnPattern": {"minLength": 1}
+            }
+          }
+        }
+      ]
+    },
+    "limits": {"type": "object"},
+    "health": {
+      "type": "object",
+      "required": ["listen"],
+      "properties": {"listen": {"type": "string", "pattern": "^0\\.0\\.0\\.0:8080$"}}
+    },
+    "rbac": {
+      "type": "object",
+      "required": ["create", "extraGroupBinding"],
+      "properties": {
+        "create": {"type": "boolean"},
+        "extraGroupBinding": {"type": "string"}
+      }
+    }
+  }
+}

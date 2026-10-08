@@ -1,0 +1,6 @@
+{
+  "get_pods": [{"name": "checkout-worker-0", "phase": "Pending", "ready": "0/1", "restarts": 0, "waiting_reason": "Pending", "age": "15m", "images": ["checkout-worker:2.4.0"]}],
+  "describe_pod": {"phase": "Pending", "conditions": [{"type": "PodScheduled", "status": "False", "reason": "Unschedulable", "message": "0/3 nodes are available: insufficient memory"}], "events": [{"last_seen": "2026-10-05T08:20:00Z", "type": "Warning", "reason": "FailedScheduling", "object": "Pod/checkout-worker-0", "count": 8, "message": "0/3 nodes are available: insufficient memory"}]},
+  "get_events": [{"last_seen": "2026-10-05T08:20:00Z", "type": "Warning", "reason": "FailedScheduling", "object": "Pod/checkout-worker-0", "count": 8, "message": "0/3 nodes are available: insufficient memory"}],
+  "list_nodeclaims": [{"name": "worker-abc", "nodepool": "general", "instance_type": "m6i.large", "capacity_type": "on-demand", "zone": "ap-southeast-7a", "ready": true, "conditions": []}]
+}

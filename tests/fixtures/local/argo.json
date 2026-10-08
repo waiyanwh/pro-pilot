@@ -1,0 +1,61 @@
+{
+  "args": {
+    "list_applications": {},
+    "get_application": {"name": "payment"},
+    "get_rollout": {"namespace": "payment", "name": "payment-api"},
+    "list_analysis_runs": {"namespace": "payment", "rollout": "payment-api", "limit": 5}
+  },
+  "routes": {
+    "/apis/argoproj.io/v1alpha1/namespaces/argocd/applications": {
+      "metadata": {},
+      "items": [
+        {
+          "metadata": {"name": "payment", "namespace": "argocd", "managedFields": [{"manager": "secret-manager"}]},
+          "spec": {"project": "payments", "destination": {"namespace": "payment"}, "source": {"repoURL": "https://private.invalid/repo", "helm": {"values": "password=forbidden-value", "valuesObject": {"password": "forbidden-value"}}}},
+          "status": {"sync": {"status": "OutOfSync", "revision": "abcdef123456789"}, "health": {"status": "Degraded"}, "operationState": {"phase": "Failed", "message": "deployment unhealthy", "startedAt": "2026-10-05T10:00:00Z", "finishedAt": "2026-10-05T10:05:00Z"}}
+        },
+        {"metadata": {"name": "platform"}, "spec": {"destination": {"namespace": "kube-system"}}, "status": {"sync": {"status": "Synced"}, "health": {"status": "Healthy"}}},
+        {"metadata": {"name": "unscoped"}, "spec": {}, "status": {}}
+      ]
+    },
+    "/apis/argoproj.io/v1alpha1/namespaces/argocd/applications/payment": {
+      "metadata": {"name": "payment", "namespace": "argocd", "managedFields": [{"manager": "secret-manager"}]},
+      "spec": {"project": "payments", "destination": {"namespace": "payment"}, "source": {"repoURL": "https://private.invalid/repo", "helm": {"values": "password=forbidden-value", "valuesObject": {"password": "forbidden-value"}}}},
+      "status": {
+        "sync": {"status": "OutOfSync", "revision": "abcdef123456789"}, "health": {"status": "Degraded"},
+        "conditions": [{"type": "SyncError", "message": "deployment unhealthy", "source": "forbidden-value"}],
+        "operationState": {"phase": "Failed", "message": "deployment unhealthy", "startedAt": "2026-10-05T10:00:00Z", "finishedAt": "2026-10-05T10:05:00Z", "operation": {"sync": {"source": {"helm": {"values": "forbidden-value"}}}}},
+        "resources": [
+          {"kind": "Deployment", "namespace": "payment", "name": "payment-api", "status": "OutOfSync", "health": {"status": "Degraded", "message": "unavailable replicas"}},
+          {"kind": "Deployment", "namespace": "kube-system", "name": "denied-resource", "status": "OutOfSync", "health": {"status": "Degraded"}},
+          {"kind": "Service", "namespace": "payment", "name": "payment-api", "status": "Synced", "health": {"status": "Healthy"}}
+        ],
+        "history": [
+          {"revision": "1111111old", "deployedAt": "2026-10-04T10:00:00Z", "source": {"helm": {"values": "forbidden-value"}}},
+          {"revision": "abcdef123456789", "deployedAt": "2026-10-05T10:00:00Z"}
+        ]
+      }
+    },
+    "/apis/argoproj.io/v1alpha1/namespaces/payment/rollouts/payment-api": {
+      "metadata": {"name": "payment-api", "namespace": "payment"},
+      "spec": {"replicas": 4, "selector": {"matchLabels": {"app": "payment-api"}}, "template": {"spec": {"containers": [{"name": "api", "image": "payment:v2", "env": [{"name": "SECRET", "value": "forbidden-value"}]}]}}, "strategy": {"canary": {"steps": [{"setWeight": 20}, {"pause": {}}, {"setWeight": 50}]}}},
+      "status": {"phase": "Paused", "message": "waiting for analysis", "currentStepIndex": 1, "stableRS": "stable-hash", "currentPodHash": "canary-hash", "readyReplicas": 3, "updatedReplicas": 1, "availableReplicas": 3, "abort": false, "pauseConditions": [{"reason": "CanaryPauseStep", "startTime": "2026-10-05T10:00:00Z"}], "canary": {"weights": {"canary": {"weight": 20}}, "currentStepAnalysisRunStatus": {"name": "payment-analysis-new", "phase": "Running"}, "currentBackgroundAnalysisRunStatus": {"name": "payment-background", "phase": "Running"}}}
+    },
+    "/apis/apps/v1/namespaces/payment/replicasets": {
+      "metadata": {},
+      "items": [
+        {"metadata": {"name": "payment-stable", "labels": {"app": "payment-api", "rollouts-pod-template-hash": "stable-hash"}, "ownerReferences": [{"kind": "Rollout", "name": "payment-api"}]}, "spec": {"template": {"spec": {"containers": [{"name": "api", "image": "payment:v1", "env": [{"name": "SECRET", "value": "forbidden-value"}]}]}}}},
+        {"metadata": {"name": "payment-canary", "labels": {"app": "payment-api", "rollouts-pod-template-hash": "canary-hash"}, "ownerReferences": [{"kind": "Rollout", "name": "payment-api"}]}, "spec": {"template": {"spec": {"containers": [{"name": "api", "image": "payment:v2"}]}}}},
+        {"metadata": {"name": "unrelated", "labels": {"app": "payment-api", "rollouts-pod-template-hash": "stable-hash"}, "ownerReferences": [{"kind": "Deployment", "name": "payment-api"}]}, "spec": {"template": {"spec": {"containers": [{"image": "wrong-owner:v9"}]}}}}
+      ]
+    },
+    "/apis/argoproj.io/v1alpha1/namespaces/payment/analysisruns": {
+      "metadata": {},
+      "items": [
+        {"metadata": {"name": "payment-analysis-old", "creationTimestamp": "2026-10-04T10:00:00Z", "ownerReferences": [{"kind": "Rollout", "name": "payment-api"}]}, "spec": {"metrics": [{"provider": {"web": {"url": "https://private.invalid", "headers": [{"value": "forbidden-value"}]}}}]}, "status": {"phase": "Successful", "startedAt": "2026-10-04T10:00:00Z", "metricResults": []}},
+        {"metadata": {"name": "unrelated-new", "creationTimestamp": "2026-10-05T11:00:00Z", "ownerReferences": [{"kind": "Deployment", "name": "payment-api"}]}, "status": {"phase": "Running", "startedAt": "2026-10-05T11:00:00Z"}},
+        {"metadata": {"name": "payment-analysis-new", "creationTimestamp": "2026-10-05T10:00:00Z", "ownerReferences": [{"kind": "Rollout", "name": "payment-api"}]}, "spec": {"args": [{"name": "token", "value": "forbidden-value"}], "metrics": [{"provider": {"prometheus": {"address": "https://private.invalid", "query": "forbidden-query"}}}]}, "status": {"phase": "Running", "startedAt": "2026-10-05T10:00:00Z", "message": "analysis in progress", "metricResults": [{"name": "success-rate", "phase": "Running", "successful": 2, "failed": 1, "inconclusive": 0, "error": 0, "measurements": [{"value": "0.8", "finishedAt": "2026-10-05T10:00:30Z"}, {"value": "0.95", "message": "threshold met", "finishedAt": "2026-10-05T10:01:00Z", "metadata": {"headers": "forbidden-value"}}]}]}}
+      ]
+    }
+  }
+}

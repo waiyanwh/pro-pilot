@@ -1,0 +1,6 @@
+apiVersion: v2
+name: pro-pilot-spoke
+description: Read-only pro-pilot Kubernetes cluster spoke
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

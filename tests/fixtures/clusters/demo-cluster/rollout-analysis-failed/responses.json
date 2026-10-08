@@ -1,0 +1,4 @@
+{
+  "get_rollout": {"phase": "Degraded", "message": "AnalysisRun failed", "strategy": "canary", "current_step": "2/4", "set_weight": 20, "paused": {"reason": "analysis failed"}, "aborted": false, "stable_rs": {"hash": "old123", "images": ["checkout:1.41.3"]}, "canary_rs": {"hash": "new456", "images": ["checkout:1.42.0"]}, "replicas": {"desired": 5, "ready": 3, "updated": 1, "available": 3}, "current_analysis_runs": ["checkout-7f9-analysis"]},
+  "list_analysis_runs": [{"name": "checkout-7f9-analysis", "phase": "Failed", "started_at": "2026-10-05T08:10:00Z", "message": "success rate below threshold", "metrics": [{"name": "http-success-rate", "phase": "Failed", "successful": false, "failed": true, "inconclusive": false, "error": "0.91 < 0.99", "last_measurement": {"value": "0.91", "message": "below threshold", "finished_at": "2026-10-05T08:11:00Z"}}]}]
+}

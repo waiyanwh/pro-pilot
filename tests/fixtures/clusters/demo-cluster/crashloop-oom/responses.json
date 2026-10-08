@@ -1,0 +1,21 @@
+{
+  "list_namespaces": [
+    {"name": "payment", "phase": "Active", "age": "42d"},
+    {"name": "kube-system", "phase": "Active", "age": "180d"}
+  ],
+  "get_pods": [
+    {"name": "payment-api-7d9c-abcde", "phase": "Running", "ready": "0/1", "restarts": 14, "last_termination": {"reason": "OOMKilled", "exit_code": 137, "finished_at": "2026-10-05T07:41:00Z"}, "waiting_reason": "CrashLoopBackOff", "node": "ip-10-0-1-23", "age": "3d", "images": ["payment-api:1.42.0"]}
+  ],
+  "describe_pod": {
+    "phase": "Running",
+    "node": "ip-10-0-1-23",
+    "qos_class": "Burstable",
+    "start_time": "2026-10-02T10:00:00Z",
+    "containers": [{"name": "payment-api", "image": "payment-api:1.42.0", "ready": false, "restart_count": 14, "state": {"waiting": {"reason": "CrashLoopBackOff"}}, "last_state": {"terminated": {"reason": "OOMKilled", "exit_code": 137}}, "requests": {"memory": "256Mi"}, "limits": {"memory": "512Mi"}, "env": [{"name": "DATABASE_PASSWORD", "value": "hunter2"}, {"name": "DATABASE_URL", "value_from": {"secret_key_ref": {"name": "payment-db", "key": "url"}}}]}],
+    "events": [{"last_seen": "2026-10-05T07:41:00Z", "type": "Warning", "reason": "BackOff", "object": "Pod/payment-api-7d9c-abcde", "count": 14, "message": "Back-off restarting failed container"}],
+    "metadata": {"managedFields": [{"manager": "kube-controller-manager"}]}
+  },
+  "get_pod_logs": {"container": "payment-api", "lines": ["2026-10-05T07:40:58Z java.lang.OutOfMemoryError: Java heap space", "2026-10-05T07:40:59Z process exited with code 137"], "truncated": false},
+  "get_workload": {"replicas": {"desired": 3, "ready": 0, "updated": 3, "available": 0}, "strategy": "RollingUpdate", "revision": "42", "containers": [{"name": "payment-api", "image": "payment-api:1.42.0", "requests": {"memory": "256Mi"}, "limits": {"memory": "512Mi"}, "env_names": ["DATABASE_PASSWORD"]}], "conditions": [{"type": "Available", "status": "False", "reason": "MinimumReplicasUnavailable"}]},
+  "top_pods": [{"pod": "payment-api-7d9c-abcde", "container": "payment-api", "cpu_millicores": 220, "memory_mib": 505, "memory_limit": "512Mi"}]
+}

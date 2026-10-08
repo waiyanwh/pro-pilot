@@ -1,0 +1,345 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "required": [
+    "replicaCount",
+    "strategy",
+    "image",
+    "config",
+    "ingress",
+    "secrets"
+  ],
+  "properties": {
+    "replicaCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "strategy": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "Recreate"
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "required": [
+        "repository",
+        "pullPolicy"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": [
+            "Always",
+            "IfNotPresent",
+            "Never"
+          ]
+        },
+        "tag": {
+          "type": "string"
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "automountServiceAccountToken": {
+          "const": false
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "required": [
+        "slack",
+        "llm",
+        "agent",
+        "rate_limits",
+        "spoke_server",
+        "health"
+      ],
+      "properties": {
+        "slack": {
+          "type": "object"
+        },
+        "llm": {
+          "type": "object",
+          "required": [
+            "mode",
+            "base_url",
+            "model_id",
+            "region"
+          ],
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "openai",
+                "bedrock",
+                "fake"
+              ]
+            },
+            "base_url": {
+              "type": "string"
+            },
+            "model_id": {
+              "type": "string"
+            },
+            "region": {
+              "type": "string"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "mode": {
+                    "const": "openai"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "base_url",
+                  "model_id"
+                ],
+                "properties": {
+                  "base_url": {
+                    "minLength": 1,
+                    "pattern": "^https://[^@/?#]+(?:/[^?#]*)?$"
+                  },
+                  "model_id": {
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "mode": {
+                    "const": "bedrock"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "region",
+                  "model_id"
+                ],
+                "properties": {
+                  "region": {
+                    "minLength": 1
+                  },
+                  "model_id": {
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "mode": {
+                    "const": "fake"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "base_url": {
+                    "maxLength": 0
+                  },
+                  "model_id": {
+                    "maxLength": 0
+                  },
+                  "region": {
+                    "maxLength": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "agent": {
+          "type": "object"
+        },
+        "rate_limits": {
+          "type": "object"
+        },
+        "spoke_server": {
+          "type": "object",
+          "required": [
+            "listen"
+          ],
+          "properties": {
+            "listen": {
+              "type": "string",
+              "pattern": "^0\\.0\\.0\\.0:8765$"
+            }
+          }
+        },
+        "health": {
+          "type": "object",
+          "required": [
+            "listen"
+          ],
+          "properties": {
+            "listen": {
+              "type": "string",
+              "pattern": "^0\\.0\\.0\\.0:8080$"
+            }
+          }
+        }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "scheme",
+        "certificateArn"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "scheme": {
+          "type": "string",
+          "enum": [
+            "internal",
+            "internet-facing"
+          ]
+        },
+        "certificateArn": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "certificateArn"
+            ],
+            "properties": {
+              "certificateArn": {
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "secrets": {
+      "type": "object",
+      "required": [
+        "create",
+        "slackBotToken",
+        "slackAppToken",
+        "spokeTokensJson"
+      ],
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "slackBotToken": {
+          "$ref": "#/definitions/secretRef"
+        },
+        "slackAppToken": {
+          "$ref": "#/definitions/secretRef"
+        },
+        "spokeTokensJson": {
+          "$ref": "#/definitions/secretRef"
+        },
+        "llmApiKey": {
+          "$ref": "#/definitions/secretRef"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "create": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "slackBotToken": {
+                "required": [
+                  "value"
+                ],
+                "properties": {
+                  "value": {
+                    "minLength": 1
+                  }
+                }
+              },
+              "slackAppToken": {
+                "required": [
+                  "value"
+                ],
+                "properties": {
+                  "value": {
+                    "minLength": 1
+                  }
+                }
+              },
+              "spokeTokensJson": {
+                "required": [
+                  "value"
+                ],
+                "properties": {
+                  "value": {
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "secretRef": {
+      "type": "object",
+      "required": [
+        "name",
+        "key"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,103 @@
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+image:
+  repository: pro-pilot-spoke
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: pro-pilot-spoke
+  annotations: {}
+  automountServiceAccountToken: true
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 256m
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+clusterId: ""
+labels: {}
+mode: in-cluster
+heartbeat_s: 20
+
+hub:
+  url: ""
+  tokenSecretRef:
+    # Enable only for chart-owned credentials supplied through private values.
+    create: false
+    name: pro-pilot-spoke-token
+    key: token
+    value: ""
+
+namespaces:
+  allow:
+    - "*"
+  deny:
+    - kube-*
+    - argocd
+    - argo-rollouts
+    - karpenter
+    - datadog*
+    - hoop*
+    - cert-manager
+    - external-secrets
+    - kubecost
+    - default
+
+kubernetes:
+  argocdNamespace: argocd
+
+aws:
+  enabled: false
+  region: ""
+  eksClusterName: ""
+  expectedRoleArnPattern: ""
+
+limits:
+  tool_timeout_s: 15
+  max_result_bytes: 32768
+  max_list_items: 200
+  max_log_lines: 200
+  max_log_since_s: 3600
+  max_concurrent_tools: 4
+
+health:
+  listen: 0.0.0.0:8080
+
+rbac:
+  create: true
+  extraGroupBinding: ""

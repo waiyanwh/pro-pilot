@@ -1,0 +1,3 @@
+{
+  "get_pod_logs": {"container": "api", "lines": ["request authenticated with eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZW1vIn0.signature", "database connection password=hunter2", "authorization: Bearer eyJhbGciOiJIUzI1NiJ9.payload.signature", "card 4111 1111 1111 1111"]}
+}

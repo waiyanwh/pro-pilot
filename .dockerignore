@@ -1,0 +1,35 @@
+# Deny by default. Images are built from package metadata and runtime code only.
+*
+
+!README.md
+!LICENSE
+!NOTICE
+!pyproject.toml
+!uv.lock
+!pro_pilot/
+!pro_pilot/**/*.py
+!pro_pilot/**/*.j2
+
+# Never send local state, credentials, test data, or repository metadata to the
+# Docker daemon, even if a broader allowlist is added above later.
+.env*
+.aws/
+.kube/
+**/kubeconfig
+**/credentials
+**/*secret*
+.git/
+.github/
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+tests/
+eval/
+out/
+config/
+docs/
+spec/
+deploy/

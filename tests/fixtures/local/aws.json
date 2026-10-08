@@ -1,0 +1,173 @@
+{
+  "routes": {
+    "/apis/networking.k8s.io/v1/namespaces/payment/ingresses/payment-ingress": {
+      "status": {
+        "loadBalancer": {
+          "ingress": [
+            {"hostname": "payment-alb-1234567890.ap-southeast-7.elb.amazonaws.com"}
+          ]
+        }
+      }
+    }
+  },
+  "args": {
+    "get_eks_cluster": {},
+    "list_nodegroups": {},
+    "get_alb_for_ingress": {"namespace": "payment", "ingress": "payment-ingress"},
+    "get_alb_metrics": {
+      "namespace": "payment",
+      "ingress": "payment-ingress",
+      "metrics": [
+        "requests",
+        "http_5xx_elb",
+        "http_5xx_target",
+        "http_4xx_target",
+        "target_response_time_p95",
+        "unhealthy_hosts"
+      ],
+      "window_minutes": 60
+    }
+  },
+  "aws": {
+    "describe_cluster": {
+      "cluster": {
+        "name": "fixture-cluster",
+        "version": "1.29",
+        "platformVersion": "eks.5",
+        "status": "ACTIVE",
+        "endpoint": "https://must-not-leave.gr7.ap-southeast-7.eks.amazonaws.com",
+        "resourcesVpcConfig": {
+          "endpointPublicAccess": false,
+          "endpointPrivateAccess": true
+        },
+        "certificateAuthority": {"data": "must-not-leave-certificate-data"}
+      }
+    },
+    "list_addons": {"addons": ["vpc-cni"]},
+    "describe_addon": {
+      "addon": {
+        "addonName": "vpc-cni",
+        "addonVersion": "v1.18.0-eksbuild.1",
+        "status": "DEGRADED",
+        "health": {
+          "issues": [
+            {
+              "code": "InsufficientNumberOfReplicas",
+              "message": "one replica unavailable",
+              "resourceIds": ["must-not-leave-resource-id"]
+            }
+          ]
+        }
+      }
+    },
+    "list_nodegroups": {"nodegroups": ["workers"]},
+    "describe_nodegroup": {
+      "nodegroup": {
+        "nodegroupName": "workers",
+        "status": "ACTIVE",
+        "version": "1.29",
+        "releaseVersion": "1.29.0-20240101",
+        "instanceTypes": ["m7i.large"],
+        "capacityType": "ON_DEMAND",
+        "scalingConfig": {"minSize": 1, "maxSize": 4, "desiredSize": 2},
+        "health": {
+          "issues": [
+            {
+              "code": "NodeCreationFailure",
+              "message": "a node did not join",
+              "resourceIds": ["must-not-leave-asg"]
+            }
+          ]
+        },
+        "resources": {"remoteAccessSecurityGroup": "must-not-leave-sg"}
+      }
+    },
+    "describe_load_balancers": {
+      "LoadBalancers": [
+        {
+          "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-southeast-7:111111111111:loadbalancer/app/other-alb/999",
+          "LoadBalancerName": "other-alb",
+          "DNSName": "other-alb-000.ap-southeast-7.elb.amazonaws.com",
+          "Scheme": "internet-facing",
+          "Type": "application",
+          "State": {"Code": "active"}
+        },
+        {
+          "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-southeast-7:111111111111:loadbalancer/app/payment-alb/123",
+          "LoadBalancerName": "payment-alb",
+          "DNSName": "payment-alb-1234567890.ap-southeast-7.elb.amazonaws.com",
+          "Scheme": "internal",
+          "Type": "application",
+          "State": {"Code": "active"}
+        }
+      ]
+    },
+    "describe_target_groups": {
+      "TargetGroups": [
+        {
+          "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-southeast-7:111111111111:targetgroup/payment-targets/456",
+          "TargetGroupName": "payment-targets",
+          "Port": 8080,
+          "Protocol": "HTTP",
+          "HealthCheckPath": "/health"
+        }
+      ]
+    },
+    "describe_target_health": {
+      "TargetHealthDescriptions": [
+        {
+          "Target": {"Id": "10.0.1.9", "Port": 8080},
+          "TargetHealth": {
+            "State": "unhealthy",
+            "Reason": "Target.ResponseCodeMismatch",
+            "Description": "health check returned 503"
+          }
+        },
+        {
+          "Target": {"Id": "10.0.1.10", "Port": 8080},
+          "TargetHealth": {"State": "healthy"}
+        }
+      ]
+    },
+    "get_metric_data": {
+      "MetricDataResults": [
+        {
+          "Id": "m0", "Label": "RequestCount",
+          "Timestamps": ["2026-10-05T11:59:00Z", "2026-10-05T11:01:00Z"],
+          "Values": [12.0, 6.0],
+          "StatusCode": "Complete"
+        },
+        {
+          "Id": "m1", "Label": "HTTPCode_ELB_5XX_Count",
+          "Timestamps": ["2026-10-05T11:01:00Z"],
+          "Values": [0.0],
+          "StatusCode": "Complete"
+        },
+        {
+          "Id": "m2", "Label": "SUM",
+          "Timestamps": ["2026-10-05T11:01:00Z"],
+          "Values": [1.0],
+          "StatusCode": "Complete"
+        },
+        {
+          "Id": "m3", "Label": "SUM",
+          "Timestamps": ["2026-10-05T11:01:00Z"],
+          "Values": [2.0],
+          "StatusCode": "Complete"
+        },
+        {
+          "Id": "m4", "Label": "SUM",
+          "Timestamps": ["2026-10-05T11:01:00Z"],
+          "Values": [0.25],
+          "StatusCode": "Complete"
+        },
+        {
+          "Id": "m5", "Label": "SUM",
+          "Timestamps": ["2026-10-05T11:01:00Z"],
+          "Values": [0.0],
+          "StatusCode": "Complete"
+        }
+      ]
+    }
+  }
+}

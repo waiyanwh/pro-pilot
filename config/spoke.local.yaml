@@ -1,0 +1,19 @@
+# Phase 0 fixture-backed spoke. The token is read from PRO_PILOT_SPOKE_TOKEN.
+cluster_id: demo-cluster
+labels: {project: demo, env: staging, cloud: fake, region: local}
+mode: fake
+fixture_scenario: crashloop-oom
+
+hub:
+  url: ws://127.0.0.1:8765/spoke/v1/connect
+
+namespaces:
+  allow: ["*"]
+  deny: ["kube-*", "argocd", "argo-rollouts", "karpenter", "datadog*", "hoop*",
+         "cert-manager", "external-secrets", "kubecost", "default"]
+
+limits:
+  tool_timeout_s: 15
+  max_result_bytes: 32768
+  max_list_items: 200
+  max_concurrent_tools: 4
